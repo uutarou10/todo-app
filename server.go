@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/uutarou10/todo-app/context"
 	"github.com/uutarou10/todo-app/handlers"
 )
@@ -22,7 +22,7 @@ type App struct {
 // NewApp creates App instance
 func NewApp(host string, port int) *App {
 	// FIXME: 環境変数とかから受け取るようにしないとなぁ
-	db, err := sql.Open("mysql", "root:password@/todoapp")
+	db, err := sql.Open("mysql", "root:password@/todoapp?parseTime=true")
 	if err != nil {
 		panic("Cannot establish db connection.")
 	}
@@ -45,6 +45,7 @@ func (a *App) Run() {
 // RegisterRoutes registration endpoints.
 func (a *App) RegisterRoutes() {
 	a.Echo.GET("/", handlers.HelloHandler)
+	a.Echo.GET("/todos", handlers.TodoIndexHandler)
 	a.Echo.GET("/db", handlers.DBAccessTestHandler)
 }
 
