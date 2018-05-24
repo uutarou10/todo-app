@@ -45,7 +45,8 @@ func (a *App) Run() {
 // RegisterRoutes registration endpoints.
 func (a *App) RegisterRoutes() {
 	a.Echo.GET("/", handlers.HelloHandler)
-	a.Echo.GET("/todos", handlers.TodoIndexHandler)
+	a.Echo.GET("/todos/", handlers.TodoIndexHandler)
+	a.Echo.GET("/todos/:id", handlers.TodoHandler)
 	a.Echo.GET("/db", handlers.DBAccessTestHandler)
 }
 

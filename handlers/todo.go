@@ -49,5 +49,34 @@ func TodoIndexHandler(c echo.Context) error {
 }
 
 func TodoHandler(c echo.Context) error {
-	return nil
+	db := getDB(c)
+	requestID := c.Param("id")
+
+	row := db.QueryRow("SELECT * FROM todos WHERE id=?", requestID)
+
+	var (
+		id          int
+		title       string
+		description string
+		isDone      bool
+		projectID   int
+		createdAt   time.Time
+		updatedAt   time.Time
+	)
+	row.Scan(&id, &title, &description, &isDone, &projectID, &createdAt, &updatedAt)
+	if id == 0 {
+		return c.String(http.StatusNotFound, "not found")
+	}
+
+	todo := models.Todo{
+		ID:          id,
+		Title:       title,
+		Description: description,
+		IsDone:      isDone,
+		ProjectID:   projectID,
+		CreatedAt:   createdAt,
+		UpdatedAt:   updatedAt,
+	}
+
+	return c.JSON(http.StatusOK, todo)
 }
