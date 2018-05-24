@@ -80,3 +80,17 @@ func TodoHandler(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, todo)
 }
+
+func CreateTodoHandler(c echo.Context) error {
+	db := getDB(c)
+	todo := new(models.Todo)
+	if err := c.Bind(todo); err != nil {
+		return c.String(http.StatusBadRequest, "Invalid params.")
+	}
+
+	row, _ := db.Query("INSERT INTO todos (title, description, isDone, projectId) VALUES (?, ?, ?, ?)", todo.Title, todo.Description, todo.IsDone, todo.ProjectID)
+
+
+	columns, _ := row.Columns()
+	return c.JSON(http.StatusOK, columns)
+}

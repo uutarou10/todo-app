@@ -46,6 +46,7 @@ func (a *App) Run() {
 func (a *App) RegisterRoutes() {
 	a.Echo.GET("/", handlers.HelloHandler)
 	a.Echo.GET("/todos/", handlers.TodoIndexHandler)
+	a.Echo.POST("/todos/", handlers.CreateTodoHandler)
 	a.Echo.GET("/todos/:id", handlers.TodoHandler)
 	a.Echo.GET("/db", handlers.DBAccessTestHandler)
 }
