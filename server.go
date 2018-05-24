@@ -6,7 +6,7 @@ import (
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/uutarou10/todo-app/context"
 	"github.com/uutarou10/todo-app/handlers"
 )
@@ -19,15 +19,10 @@ type App struct {
 	DB   *sql.DB
 }
 
-// // CustomContext extends echo.Context
-// type CustomContext struct {
-// 	echo.Context
-// 	DB *sql.DB
-// }
-
 // NewApp creates App instance
 func NewApp(host string, port int) *App {
-	db, err := sql.Open("sqlite3", "./db.sqlite3")
+	// FIXME: 環境変数とかから受け取るようにしないとなぁ
+	db, err := sql.Open("mysql", "root:password@/todoapp")
 	if err != nil {
 		panic("Cannot establish db connection.")
 	}
@@ -73,6 +68,6 @@ func (a *App) RegisterMiddlewares() {
 }
 
 func main() {
-	app := NewApp("localhost", 8080)
+	app := NewApp("localhost", 3000)
 	app.Run()
 }

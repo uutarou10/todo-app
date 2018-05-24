@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo"
@@ -18,10 +17,10 @@ func DBAccessTestHandler(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "Cannot cast echo.Context to custom context.")
 	}
 
-	rows, _ := cc.DB.Query("SELECT * FROM test")
+	rows, _ := cc.DB.Query("SELECT * FROM todos")
 	defer rows.Close()
 
 	columuns, _ := rows.Columns()
 
-	return c.String(http.StatusOK, fmt.Sprintf("%#v", columuns))
+	return c.JSON(http.StatusOK, columuns)
 }
