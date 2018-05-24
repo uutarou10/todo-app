@@ -4,9 +4,10 @@ import (
 	"database/sql"
 	"fmt"
 
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	_ "github.com/mattn/go-sqlite3"
+	"github.com/uutarou10/todo-app/context"
 	"github.com/uutarou10/todo-app/handlers"
 )
 
@@ -18,18 +19,24 @@ type App struct {
 	DB   *sql.DB
 }
 
-// CustomContext extends echo.Context
-type CustomContext struct {
-	echo.Context
-	DB *sql.DB
-}
+// // CustomContext extends echo.Context
+// type CustomContext struct {
+// 	echo.Context
+// 	DB *sql.DB
+// }
 
 // NewApp creates App instance
 func NewApp(host string, port int) *App {
+	db, err := sql.Open("sqlite3", "./db.sqlite3")
+	if err != nil {
+		panic("Cannot establish db connection.")
+	}
+
 	return &App{
 		Echo: echo.New(),
 		Host: host,
 		Port: port,
+		DB:   db,
 	}
 }
 
@@ -43,20 +50,20 @@ func (a *App) Run() {
 // RegisterRoutes registration endpoints.
 func (a *App) RegisterRoutes() {
 	a.Echo.GET("/", handlers.HelloHandler)
+	a.Echo.GET("/db", handlers.DBAccessTestHandler)
 }
 
 // RegisterMiddlewares registrationg middlewares.
 func (a *App) RegisterMiddlewares() {
 	// DB provider
 	a.Echo.Use(func(h echo.HandlerFunc) echo.HandlerFunc {
+		if a.DB == nil {
+			panic("Not exist db connection.")
+		}
 		return func(c echo.Context) error {
-			db, err := sql.Open("sqlite3", "db.sqlite3")
-			if err != nil {
-				panic("Cannot establish db connection.")
-			}
-			cc := &CustomContext{
+			cc := &context.Context{
 				c,
-				db,
+				a.DB,
 			}
 
 			return h(cc)
