@@ -88,9 +88,52 @@ func CreateTodoHandler(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "Invalid params.")
 	}
 
-	row, _ := db.Query("INSERT INTO todos (title, description, isDone, projectId) VALUES (?, ?, ?, ?)", todo.Title, todo.Description, todo.IsDone, todo.ProjectID)
+	result, err := db.Exec("INSERT INTO todos (title, description, isDone, projectId) VALUES (?, ?, ?, ?)", todo.Title, todo.Description, todo.IsDone, todo.ProjectID)
+	if err != nil {
+		return c.NoContent(http.StatusBadRequest)
+	}
 
+	// LastInsertIdをみていい感じにする
+	insertedID, _ := result.LastInsertId()
+	insertedRow := db.QueryRow("SELECT * FROM todos where id=?", insertedID)
 
-	columns, _ := row.Columns()
-	return c.JSON(http.StatusOK, columns)
+	var (
+		id          int
+		title       string
+		description string
+		isDone      bool
+		projectID   int
+		createdAt   time.Time
+		updatedAt   time.Time
+	)
+	insertedRow.Scan(&id, &title, &description, &isDone, &projectID, &createdAt, &updatedAt)
+
+	todo = &models.Todo{
+		ID:          id,
+		Title:       title,
+		Description: description,
+		IsDone:      isDone,
+		ProjectID:   projectID,
+		CreatedAt:   createdAt,
+		UpdatedAt:   updatedAt,
+	}
+
+	return c.JSON(http.StatusCreated, todo)
+}
+
+func DeleteTodoHandler(c echo.Context) error {
+	db := getDB(c)
+	id := c.Param("id")
+
+	result, err := db.Exec("DELETE FROM todos where id=?", id)
+	if err != nil {
+		return c.NoContent(http.StatusBadRequest)
+	}
+
+	// 変更された行が存在しなかったら
+	if affectedRows, _ := result.RowsAffected(); affectedRows <= 0 {
+		return c.NoContent(http.StatusNotFound)
+	}
+
+	return c.NoContent(http.StatusOK)
 }
