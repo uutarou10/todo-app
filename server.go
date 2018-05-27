@@ -49,6 +49,7 @@ func (a *App) RegisterRoutes() {
 	a.Echo.POST("/todos/", handlers.CreateTodoHandler)
 	a.Echo.GET("/todos/:id", handlers.TodoHandler)
 	a.Echo.DELETE("/todos/:id", handlers.DeleteTodoHandler)
+	a.Echo.PUT("/todos/:id", handlers.UpdateTodoHandler)
 	a.Echo.GET("/db", handlers.DBAccessTestHandler)
 }
 

@@ -121,6 +121,46 @@ func CreateTodoHandler(c echo.Context) error {
 	return c.JSON(http.StatusCreated, todo)
 }
 
+func UpdateTodoHandler(c echo.Context) error {
+	db := getDB(c)
+	requestId := c.Param("id")
+
+	todo := new(models.Todo)
+	if err := c.Bind(todo); err != nil {
+		return c.NoContent(http.StatusBadRequest)
+	}
+
+	result, _ := db.Exec("UPDATE todos SET title=?, description=?, isDone=?, projectId=?, updatedAt=CURRENT_TIMESTAMP() where id=?", todo.Title, todo.Description, todo.IsDone, todo.ProjectID, requestId)
+	if affectedRow, _ := result.RowsAffected(); affectedRow <= 0 {
+		return c.NoContent(http.StatusNotFound)
+	}
+
+	updatedRow := db.QueryRow("SELECT * FROM todos where id=?", requestId)
+
+	var (
+		id          int
+		title       string
+		description string
+		isDone      bool
+		projectID   int
+		createdAt   time.Time
+		updatedAt   time.Time
+	)
+	updatedRow.Scan(&id, &title, &description, &isDone, &projectID, &createdAt, &updatedAt)
+
+	todo = &models.Todo{
+		ID:          id,
+		Title:       title,
+		Description: description,
+		IsDone:      isDone,
+		ProjectID:   projectID,
+		CreatedAt:   createdAt,
+		UpdatedAt:   updatedAt,
+	}
+
+	return c.JSON(http.StatusCreated, todo)
+}
+
 func DeleteTodoHandler(c echo.Context) error {
 	db := getDB(c)
 	id := c.Param("id")
@@ -135,5 +175,5 @@ func DeleteTodoHandler(c echo.Context) error {
 		return c.NoContent(http.StatusNotFound)
 	}
 
-	return c.NoContent(http.StatusOK)
+	return c.NoContent(http.StatusNoContent)
 }
