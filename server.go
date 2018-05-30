@@ -70,6 +70,13 @@ func (a *App) RegisterMiddlewares() {
 		}
 	})
 	a.Echo.Use(middleware.Logger())
+	// Add Header
+	a.Echo.Use(func(h echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			c.Response().Header().Set(echo.HeaderAccessControlAllowOrigin, "*")
+			return h(c)
+		}
+	})
 }
 
 func main() {
